@@ -1688,3 +1688,14 @@ Event
 - 동일 Promoter가 하나의 Event에서 복수 Role을 수행할 수 있는지
 
 이 부분들은 Domain Model을 그리면서 별도 의사결정 대상으로 다룬다.
+
+---
+
+## 관련 문서
+
+설계 산출물은 기획서와 분리해 [`docs/`](docs/README.md)에서 관리한다.
+
+- [문서 맵](docs/README.md)
+- [도메인 경계 결정 D1~D5](docs/domain/01-boundary-decisions.md) — §30·Appendix B의 다섯 경계에 대한 결정
+- [도메인 모델](docs/domain/02-domain-model.md) — 엔티티, 관계, 상태기계, 불변식
+- [개발 플랜](docs/plan/development-plan.md) — Phase 0~4 시스템 개발 순서
