@@ -4,7 +4,13 @@ import Image from "next/image";
 import gsap from "gsap";
 import type { RingItem } from "@/lib/landing-content";
 
-export function RingFragments({ item }: { item: RingItem | null }) {
+export function RingFragments({
+  item,
+  onClose,
+}: {
+  item: RingItem | null;
+  onClose?: () => void;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   // 퇴장 애니메이션 동안 마지막 콘텐츠 유지 (렌더 중 파생 상태 패턴)
   const [last, setLast] = useState<RingItem | null>(null);
@@ -49,10 +55,19 @@ export function RingFragments({ item }: { item: RingItem | null }) {
     <div
       ref={rootRef}
       aria-hidden
-      className="pointer-events-none absolute top-1/2 right-[4vw] z-[55] hidden w-[24vw] max-w-[360px] min-w-[240px] -translate-y-1/2 opacity-0 [text-shadow:0_1px_16px_rgb(10_10_11/0.9)] md:block"
+      className="pointer-events-auto fixed inset-x-0 bottom-0 z-[62] max-h-[46svh] overflow-y-auto rounded-t-xl border-t border-line bg-ink-soft/95 px-5 pt-4 pb-6 opacity-0 [text-shadow:0_1px_16px_rgb(10_10_11/0.9)] md:pointer-events-none md:absolute md:inset-x-auto md:top-1/2 md:right-[4vw] md:bottom-auto md:z-[55] md:max-h-none md:w-[24vw] md:max-w-[360px] md:min-w-[240px] md:-translate-y-1/2 md:overflow-visible md:rounded-none md:border-0 md:bg-transparent md:p-0"
     >
       {data && (
         <>
+          {onClose && (
+            <button
+              onClick={onClose}
+              aria-label="닫기"
+              className="font-display absolute top-3 right-4 p-1 text-lg leading-none opacity-70 md:hidden"
+            >
+              ✕
+            </button>
+          )}
           <p
             data-frag
             className="font-display text-[11px] tracking-[0.3em] uppercase opacity-60"
@@ -93,7 +108,7 @@ export function RingFragments({ item }: { item: RingItem | null }) {
               </span>
             ))}
           </div>
-          <div className="relative mt-5 aspect-[4/3]">
+          <div className="mt-4 flex gap-2 md:relative md:mt-5 md:block md:aspect-[4/3]">
             <Image
               data-frag
               src={data.frag.snaps[0]}
@@ -101,7 +116,7 @@ export function RingFragments({ item }: { item: RingItem | null }) {
               width={640}
               height={800}
               draggable={false}
-              className="absolute top-0 left-0 w-[54%] -rotate-[5deg] rounded-sm shadow-2xl shadow-black/60 select-none"
+              className="h-24 w-auto rounded-sm select-none md:absolute md:top-0 md:left-0 md:h-auto md:w-[54%] md:-rotate-[5deg] md:shadow-2xl md:shadow-black/60"
             />
             {data.frag.snaps[1] && (
               <Image
@@ -111,7 +126,7 @@ export function RingFragments({ item }: { item: RingItem | null }) {
                 width={640}
                 height={800}
                 draggable={false}
-                className="absolute top-[14%] right-0 w-[46%] rotate-[4deg] rounded-sm shadow-2xl shadow-black/60 select-none"
+                className="h-24 w-auto rounded-sm select-none md:absolute md:top-[14%] md:right-0 md:h-auto md:w-[46%] md:rotate-[4deg] md:shadow-2xl md:shadow-black/60"
               />
             )}
           </div>

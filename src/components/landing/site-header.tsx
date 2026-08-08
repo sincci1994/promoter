@@ -11,12 +11,6 @@ export function SiteHeader() {
           {site.brand}
         </a>
         <nav className="flex items-center gap-6 text-sm">
-          <a
-            href="#models"
-            className="tracking-wide opacity-80 transition-opacity hover:opacity-100"
-          >
-            모델
-          </a>
           {site.nav.map((item) => (
             <a
               key={item.href}

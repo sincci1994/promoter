@@ -186,6 +186,9 @@ export function RingCarousel() {
             className="absolute top-1/2 left-1/2 w-[124px] will-change-transform sm:w-[148px] md:w-[clamp(160px,14vw,240px)]"
             onMouseEnter={() => setHovered(i)}
             onMouseLeave={() => setHovered(-1)}
+            onClick={() => {
+              if (!hoverable) setHovered(hoveredRef.current === i ? -1 : i);
+            }}
           >
             <article className="ring-card relative aspect-[3/4] overflow-hidden rounded-sm select-none">
               <ClipMedia clip={item.clip} video={hoverable && !reduced} />
@@ -261,9 +264,10 @@ export function RingCarousel() {
         </div>
       </div>
 
-      {hoverable && !reduced && (
+      {!reduced && (
         <RingFragments
           item={hoveredIdx >= 0 ? ringClips[hoveredIdx] : null}
+          onClose={() => setHovered(-1)}
         />
       )}
 

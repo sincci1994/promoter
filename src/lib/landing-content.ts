@@ -20,10 +20,6 @@ export const site = {
       label: "행사 문의",
       href: `mailto:${email}?subject=${encodeURIComponent("[행사 문의]")}`,
     },
-    {
-      label: "프로모터 지원",
-      href: `mailto:${email}?subject=${encodeURIComponent("[프로모터 지원]")}`,
-    },
   ],
 };
 
@@ -228,20 +224,6 @@ export const ringClips: { clip: Clip; label: string; frag: Frag }[] = [
 ];
 
 export type RingItem = (typeof ringClips)[number];
-
-// 모델 화보 패널 — 이름·태그는 목업 가명 (실제 소속 인력 데이터로 교체 예정)
-export const models = [
-  { name: "지수", tag: "P3 · VIP 응대", photo: "/media/portrait-01.jpg" },
-  { name: "태오", tag: "P3 · 전시 운영", photo: "/media/portrait-02.jpg" },
-  { name: "유나", tag: "P2 · 브랜드 앰배서더", photo: "/media/portrait-03.jpg" },
-  { name: "서연", tag: "P2 · 쇼케이스", photo: "/media/portrait-04.jpg" },
-  { name: "하람", tag: "P1 · 운영 스태프", photo: "/media/portrait-05.jpg" },
-  { name: "도윤", tag: "P3 · 리더 L1", photo: "/media/portrait-06.jpg" },
-  { name: "수민", tag: "P2 · 퍼포먼스", photo: "/media/portrait-07.jpg" },
-  { name: "민준", tag: "P4 · MC", photo: "/media/portrait-08.jpg" },
-  { name: "예린", tag: "P2 · 뷰티", photo: "/media/portrait-09.jpg" },
-  { name: "하윤", tag: "P3 · 런웨이", photo: "/media/portrait-12.jpg" },
-];
 
 export function ph(hue: number): CSSProperties {
   return {
