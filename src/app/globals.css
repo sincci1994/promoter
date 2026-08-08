@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-pretendard), "Apple SD Gothic Neo", system-ui, sans-serif;
+  --font-display: var(--font-clash), var(--font-pretendard), sans-serif;
+}
+
+@theme {
+  --color-ink: #0a0a0b;
+  --color-ink-soft: #131315;
+  --color-paper: #f4f2ee;
+  --color-muted: #8b8a86;
+  --color-line: #26262a;
+  --color-spot: #ff5c28;
+}
+
+::selection {
+  background: var(--color-spot);
+  color: var(--color-ink);
+}
+
+@utility text-stroke {
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--color-paper) 45%, transparent);
+  color: transparent;
+}
+
+@utility scrim-b {
+  background: linear-gradient(
+    to top,
+    rgb(10 10 11 / 0.92) 0%,
+    rgb(10 10 11 / 0.45) 45%,
+    transparent 100%
+  );
+}
+
+.ring-card {
+  transition: filter 0.4s ease;
+}
+
+.ring-card.ring-gray {
+  filter: grayscale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring-card {
+    transition: none;
+  }
+}
