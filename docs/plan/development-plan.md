@@ -2,7 +2,7 @@
 
 > Version 0.2 (2026-08-08)
 > 전제: [기획서](../../README.md) + [경계 결정 D1~D5](../domain/01-boundary-decisions.md) + [도메인 모델](../domain/02-domain-model.md)을 기준으로 한다.
-> 기술 스택은 **의도적으로 미정**이다 — Phase 3의 첫 결정 항목이며, 그 전 단계 산출물은 스택과 무관하게 유효하다.
+> 기술 스택의 결정 항목 4개(언어/프레임워크·DB·호스팅·알림 채널)는 **조기 확정**했다(2026-08-08) — [스택 결정](../tech/stack-decision.md). 클라이언트 형태(웹+PWA)·호스팅·알림 채널이 Phase 2 화면 설계와 비용 계획에 선행해야 했기 때문이다. **ERD·API 계약은 여전히 Phase 1 완료 후**이며, 정책 이전 단계 산출물이 스택과 무관하게 유효하다는 원칙은 유지된다.
 
 ---
 
@@ -39,6 +39,8 @@ Phase 1~3은 문서 작업이므로 겹쳐 진행할 수 있으나, **Phase 3은
 
 기획서 Appendix A 2, 6~11에 해당한다. 산출물은 `docs/product/`에 둔다.
 
+**착수 (2026-08-08)**: [User Flow 3종](../product/user-flows.md) v0.1, [MVP 화면 목록](../product/mvp-screens.md) v0.1 작성됨(화면↔§26 대조표 포함). 잔여: Actor×UseCase, Review/Leader Authority Matrix — Review 항목·Leader 권한이 확정되면 화면 문서의 `[정책]` 표기를 채운다.
+
 | 산출물 | 내용 |
 |---|---|
 | Actor×UseCase 확정 | Phase 1 워크스루의 형식화. Buyer/Worker(Promoter/Leader)/Platform별 |
@@ -57,7 +59,7 @@ Phase 1~3은 문서 작업이므로 겹쳐 진행할 수 있으나, **Phase 3은
 
 | 산출물 | 내용 |
 |---|---|
-| 스택 결정 | **결정 항목**: 언어/프레임워크, DB, 호스팅, 알림 채널(카카오 알림톡/SMS/Push). 현 시점 제안 없음 — Phase 3 진입 시 결정 |
+| 스택 결정 | **확정됨 (2026-08-08 조기 확정)**: TypeScript + Next.js(웹 단일+PWA) / PostgreSQL(Supabase) / Vercel / 알림톡+SMS(SOLAPI) — 근거·무료 티어 검증·마이그레이션 트리거는 [스택 결정](../tech/stack-decision.md). ERD 착수 시 재검증 |
 | ERD | 02의 엔티티·불변식을 스키마로. I1~I9 각각의 강제 수단(부분 유니크, 트랜잭션, 애플리케이션 규칙)을 명시. 자격 요구조건의 저장 형태(배열 vs 관계 테이블 — 추천 쿼리 빈도 기준) 결정 |
 | API 계약 | 상태 전이 = API의 뼈대. 전이표의 행위자 칸이 곧 권한 모델 |
 
