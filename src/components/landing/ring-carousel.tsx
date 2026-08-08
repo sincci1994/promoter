@@ -1,11 +1,14 @@
 "use client";
-import { useRef, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { hero, ringClips, site } from "@/lib/landing-content";
+import { hero, heroStats, ringClips, site } from "@/lib/landing-content";
 import { ClipMedia } from "./clip-media";
+import { RingFragments } from "./ring-fragments";
 
 gsap.registerPlugin(useGSAP);
+// 창이 가려져 rAF가 스로틀돼도 타임라인이 실시간을 따라잡게 (기본 lagSmoothing은 크롤 유발)
+gsap.ticker.lagSmoothing(0);
 
 const TILT = (-20 * Math.PI) / 180;
 const BASE_SPEED = 1 / 52; // 자동 회전: 1바퀴 52초
@@ -36,6 +39,7 @@ export function RingCarousel() {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dimRefs = useRef<(HTMLDivElement | null)[]>([]);
   const hoveredRef = useRef(-1);
+  const [hoveredIdx, setHoveredIdx] = useState(-1);
 
   useGSAP(
     () => {
@@ -159,6 +163,7 @@ export function RingCarousel() {
 
   const setHovered = (idx: number) => {
     hoveredRef.current = idx;
+    setHoveredIdx(idx);
     for (let i = 0; i < cardRefs.current.length; i++) {
       const card = cardRefs.current[i]?.querySelector(".ring-card");
       card?.classList.toggle("ring-gray", idx !== -1 && i !== idx);
@@ -182,7 +187,7 @@ export function RingCarousel() {
             onMouseEnter={() => setHovered(i)}
             onMouseLeave={() => setHovered(-1)}
           >
-            <article className="ring-card relative aspect-[3/4] overflow-hidden rounded-sm">
+            <article className="ring-card relative aspect-[3/4] overflow-hidden rounded-sm select-none">
               <ClipMedia clip={item.clip} video={hoverable && !reduced} />
               <div
                 ref={(el) => {
@@ -224,6 +229,24 @@ export function RingCarousel() {
         </p>
         <div
           data-hero-fade
+          className="mt-6 flex items-center gap-6 md:gap-8"
+        >
+          {heroStats.map((stat) => (
+            <div key={stat.label} className="text-center">
+              <p className="font-display text-xl font-semibold md:text-2xl">
+                {stat.value}
+                <span className="ml-0.5 text-sm font-medium text-paper/60">
+                  {stat.suffix}
+                </span>
+              </p>
+              <p className="mt-0.5 text-[11px] tracking-wide text-paper/50">
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div
+          data-hero-fade
           className="pointer-events-auto mt-8 flex items-center gap-8"
         >
           {site.nav.map((item) => (
@@ -237,6 +260,12 @@ export function RingCarousel() {
           ))}
         </div>
       </div>
+
+      {hoverable && !reduced && (
+        <RingFragments
+          item={hoveredIdx >= 0 ? ringClips[hoveredIdx] : null}
+        />
+      )}
 
       <div
         data-hero-fade

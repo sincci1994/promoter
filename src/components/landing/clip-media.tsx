@@ -37,13 +37,15 @@ export function ClipMedia({
     <video
       ref={ref}
       aria-label={clip.alt}
-      className={`absolute inset-0 h-full w-full object-cover ${className}`}
+      className={`pointer-events-none absolute inset-0 h-full w-full object-cover select-none ${className}`}
       src={clip.src}
       poster={clip.poster}
       muted
       loop
       playsInline
       preload={preload}
+      disablePictureInPicture
+      controlsList="nodownload noplaybackrate"
     />
   );
 }
