@@ -1,7 +1,9 @@
 # User Flow 3종 — Buyer / Promoter / Leader
 
+> Version 0.3 (2026-08-08) — D6 외부 리뷰 반영: 복수 Role 지원(I10 Role 단위), 감사 필드 기록, Standby 대기, 승인=계약의 두 전제
+> Version 0.2 (2026-08-08) — D6 반영: Buyer 공개 모집 병행 경로(M1~M6), Promoter 지원 경로(J1~J6), 알림 접점 4행 추가
 > Version 0.1 (2026-08-08)
-> 기준 문서: [기획서 §22 전체 흐름](../../README.md), [도메인 모델 §4~6 상태기계](../domain/02-domain-model.md), [경계 결정 D1~D5](../domain/01-boundary-decisions.md)
+> 기준 문서: [기획서 §22 전체 흐름](../../README.md), [도메인 모델 §4~6 상태기계](../domain/02-domain-model.md), [경계 결정 D1~D6](../domain/01-boundary-decisions.md)
 > 표기: `[화면 ID]`는 [MVP 화면 목록](mvp-screens.md)의 화면. `{엔티티: A→B}`는 상태 전이. 정책 미확정 수치는 `[정책]`으로 표기(Phase 1에서 확정).
 > 모든 Flow는 상태기계 위에서 재생 가능해야 한다(Phase 2 완료 기준). 상태기계에 없는 전이를 Flow가 요구하면 이 문서가 아니라 02를 먼저 고친다.
 
@@ -15,7 +17,7 @@
 |---|---|---|---|
 | 1 | 가입, 조직 프로필 등록 | [A1] [A2] [A4] | User, BuyerProfile 생성 |
 | 2 | 행사 생성 — 행사명/유형/브랜드/일시/장소 | [B2] | {Event: 생성→Draft} |
-| 3 | 역할 구성 — Role별 인원·최소 Grade·자격 요구·소프트 태그. leader Role은 최대 1개(I9) | [B3] | EventRole 생성. {Event: Draft→TeamBuilding} |
+| 3 | 역할 구성 — Role별 인원·최소 Grade·자격 요구·소프트 태그. leader Role은 최대 1개(I9). **Role별 공개 모집 토글(선택, D6)** | [B3] | EventRole 생성 + posted_at 기록(켠 경우 — Event 상태 변화 없음). {Event: Draft→TeamBuilding} |
 | 4 | 추천 확인·팀 편집 — 추천 실행(RecommendationRun 로그), 후보 담기/교체, 프로필 상세 확인([B5]), **실시간 견적**(저장 없음, D5) | [B4] | {Assignment: 생성→Selected}, 교체 시 {Selected→Removed} + 새 Selected |
 | 5 | Booking 요청 발송 — 견적 요약·응답기한 `[정책]` 안내 확인 | [B6] | {Assignment: Selected→Requested} × N. **PriceSnapshot 동결(I5)**, expires_at 설정, Booking 생성(Event당 활성 1, I1), {Event: TeamBuilding→BookingPending}, **첫 요청 시 일시·장소·Role 요구조건 잠금(I7)**. Worker 알림 발송 |
 | 6 | 응답 대기 — 충원 현황 모니터링 | [B7] | {Booking(파생): Requested → PartiallyAccepted} |
@@ -23,6 +25,17 @@
 | 8 | 행사 당일 — 출결·Incident·Replacement 진행 모니터링. Leader 없는 행사는 여기서 Buyer가 직접 출결 기록 | [B8] | {Event: Confirmed→InProgress}. Attendance 기록 열람 |
 | 9 | 행사 종료 | — (System) | {Event: InProgress→Completed}, {Assignment: Confirmed→Completed}(check-out 기반) |
 | 10 | 평가 — 참여 Promoter 각각·Leader | [B9] | Review 생성(§19.1 Buyer→Promoter, §19.4 Buyer→Leader). Reliability/Career 반영 |
+
+### 공개 모집 병행 경로 (선택 — 성공 경로 3~7단계와 병행, D6)
+
+| # | 단계 | 화면 | 상태 변화 |
+|---|---|---|---|
+| M1 | 모집 켜기 — 역할 구성 시 또는 충원 난항 시 Role 단위 토글 | [B3] [B7] | EventRole.posted_at 기록(최초 1회 — I7 래치). 공고 노출 시작(공개 범위 `[정책]`) |
+| M2 | 지원 접수 — 알림 수신 → 지원자 확인 | [B7] | {Application: 생성→Open}(Worker 행위, I10). Buyer 알림 |
+| M3 | 지원자 검토 — 프로필 상세 확인 | [B7] → [B5] | — |
+| M4 | **승인** — 동결가가 지원 시 표시가보다 낮으면 Worker 재확인 분기 `[정책]` | [B7] (또는 [B4] 지원자 우선 노출 경유) | {Application: Open→Approved} + **{Assignment: 생성→Accepted}, PriceSnapshot 동결(I5)**, Booking 없으면 생성, 해당 Worker의 같은 행사 나머지 Open 지원 일괄 Closed(OTHER_ROLE_APPROVED). 충원 파생에 합류 — 전 자리 충족 시 성공 경로 7단계(확정)로. Worker 알림 |
+| M5 | 반려 | [B7] | {Application: Open→Declined}. 자리 영향 없음. Worker 알림(재지원 제한 `[정책]`) |
+| M6 | 모집 끄기 — 수동 또는 자동 `[정책]` | [B3]/[B7] | posting_closed_at 기록 — **신규 접수만 차단**, 접수된 Open 지원은 계속 검토 가능(기본 방향: Standby 유지, D6 결정 7). 일괄 종결 여부 `[정책]` |
 
 ### 실패·우회 경로
 
@@ -33,7 +46,9 @@
 | 요청 철회 | [B7] 개별 요청 철회 | {Assignment: Requested→Cancelled}(자리 재오픈) |
 | 행사 취소 | [B7] 취소(확인 다이얼로그, 취소 정책 `[정책]` 고지) | Booking Cancel(유일한 명시 명령) → 활성 Assignment 일괄 {→Cancelled}, {Event: →Cancelled} |
 | 취소 후 재예약 | [B2]부터 재생성 또는 [B7]에서 재예약 → 새 Booking | 취소 Booking은 이력 보존(I1은 활성 행 기준). Declined 이력 Worker에게 재요청 가능 |
-| 확정 후 이탈 발생 | 알림 수신 → [B7]에서 재충원 or Replacement 진행 확인([B8]) | {Booking(파생): Confirmed→Open/PartiallyAccepted 회귀}. **Event.Confirmed는 latch로 유지** — "확정된 행사의 재충원 중" |
+| 확정 후 이탈 발생 | 알림 수신 → [B7]에서 재충원 — **잔여 Open 지원자(Standby) 즉시 승인(M4)**, 재추천([B4]), 또는 Replacement 진행 확인([B8]) | {Booking(파생): Confirmed→Open/PartiallyAccepted 회귀}. **Event.Confirmed는 latch로 유지** — "확정된 행사의 재충원 중" |
+| 충원 난항 — 거절·만료 누적, 대안 후보 부족 | [B7] 결원 Role에 **공개 모집 켜기** → 지원 유입 대기 → M2~M4 | EventRole 게시(D6). 기존 재추천([B4])과 병행 가능 — 같은 자리에 지명 1건 + 지원 N건(A4) |
+| 승인 직전 자리 소진 — 지명 수락이 먼저 성립 | [B7] 승인 시도 → "자리가 방금 충원되었습니다" 안내 | 승인 트랜잭션 I3 실패, Application은 Open 유지 → 반려 또는 모집 끄기로 정리 |
 
 ---
 
@@ -53,6 +68,17 @@
 | 8 | 행사 당일 — 집합, Leader에게 체크인/체크아웃(기록은 [L2]에서) | [P7] | Attendance check_in_at / check_out_at → {Assignment: Confirmed→Completed} |
 | 9 | 평가 — Leader·행사/Buyer에 대해 | [P8] | Review 생성(§19.3, §19.5) |
 | 10 | 경력·등급 반영 확인 | [P2] | Career 증가, Reliability 반영, Grade 승급 시 GradeHistory 추가 `[정책]` |
+
+### 지원 경로 (공고 탐색 → 지원 → 승인 — 성공 경로 4~5단계의 대칭, D6)
+
+| # | 단계 | 화면 | 상태 변화 |
+|---|---|---|---|
+| J1 | 공고 탐색 — 날짜 스트립에서 날짜 선택 → 그날 모집 중 공고 리스트(본인 Grade 기준 **예상 단가** 표시) | [P9] | — |
+| J2 | 공고 상세 — 조건·예상 금액("승인 시점 금액으로 동결됩니다" 고지) 확인 | [P5 공고 변형] | — |
+| J3 | 지원 — 같은 행사 복수 Role 지원 가능 | [P5 공고 변형] | {Application: 생성→Open}(I10 — **Role당** 활성 지원 1, 행사당 상한 `[정책]`) + **감사 필드 3개 서버 기록**(표시가·정책 버전·등급, D6). 시간 겹침은 소프트 경고만(하드 검사 I6은 승인 시). Buyer 알림(묶음 `[정책]`) |
+| J4 | 승인 대기 — 내 지원 현황 확인, 철회 가능. 정원 충족 시 "대기(Standby)" 표시 `[정책]` | [P4 내 지원 탭] | 철회 시 {Application: Open→Withdrawn}(Buyer 통지 여부 `[정책]`) |
+| J5 | 승인 통지 수신 — **Worker의 수락 단계 없음**(지원이 사전 동의. 전제: I7 조건 잠금 + 가격 보호 — 동결가가 지원 시 표시가보다 낮으면 재확인 `[정책]`, D6) | [P7] | {Application: Open→Approved}, {Assignment: 생성→Accepted}. 같은 행사의 나머지 내 지원은 자동 마감(OTHER_ROLE_APPROVED). **합류점: 성공 경로 5단계(수락) 직후와 동일** — 이후 확정 통지·D-3/D-1·당일·평가 전부 기존 경로(D-3 이후 성립이면 즉시 확인 1회 `[정책]`) |
+| J6 | 반려·만료·마감 통지 — 마감은 사유 표기(행사 취소/다른 역할 승인/모집 종료 등, closed_reason) | [P4] | {Application: Open→Declined \| Expired \| Closed}. 흐린 처리 이력 |
 
 ### 실패·우회 경로
 
@@ -110,3 +136,8 @@ Flow를 관통하는 알림(알림톡/SMS, [스택 결정 §3](../tech/stack-dec
 | Replacement 진행(매칭/실패) | Buyer, Leader | [B8] / [L3] |
 | 행사 안내(집합·복장·Brief) | 참여 Worker | [P7] |
 | Review 요청 | 전원 | [P8] / [B9] |
+| 지원 접수 (D6) — 묶음/다이제스트 규칙 `[정책]`(상한 미확정 상태의 알림 폭주 방지) | Buyer | [B7] |
+| 지원 철회 (D6) — 통지 여부 `[정책]` | Buyer | [B7] |
+| 지원 승인 (D6) | Worker | [P7] |
+| 지원 반려·만료 (D6) | Worker | [P4] |
+| 일괄 종결(사유 표기) — 행사 취소·시작 시각 경과(I11), 계약 성립 supersede(지명 DIRECT_ASSIGNMENT_ACCEPTED·타 Role 승인 OTHER_ROLE_APPROVED) `[정책]` | Worker | [P4] |

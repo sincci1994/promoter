@@ -1,7 +1,8 @@
 # 시스템 개발 플랜
 
+> Version 0.3 (2026-08-08) — D6(공개 모집·지원) 반영: 슬라이스 S6 추가, 불변식 범위 I1~I11로 갱신
 > Version 0.2 (2026-08-08)
-> 전제: [기획서](../../README.md) + [경계 결정 D1~D5](../domain/01-boundary-decisions.md) + [도메인 모델](../domain/02-domain-model.md)을 기준으로 한다.
+> 전제: [기획서](../../README.md) + [경계 결정 D1~D6](../domain/01-boundary-decisions.md) + [도메인 모델](../domain/02-domain-model.md)을 기준으로 한다.
 > 기술 스택의 결정 항목 4개(언어/프레임워크·DB·호스팅·알림 채널)는 **조기 확정**했다(2026-08-08) — [스택 결정](../tech/stack-decision.md). 클라이언트 형태(웹+PWA)·호스팅·알림 채널이 Phase 2 화면 설계와 비용 계획에 선행해야 했기 때문이다. **ERD·API 계약은 여전히 Phase 1 완료 후**이며, 정책 이전 단계 산출물이 스택과 무관하게 유효하다는 원칙은 유지된다.
 
 ---
@@ -13,8 +14,8 @@
 | 0. 경계 결정 | 도메인 골격 확정 | 01-boundary-decisions, 02-domain-model | **완료** (2026-08-08) |
 | 1. 설계 확정 | 상태·가격·리스크 정책의 구조 확정 | 상태기계 확정판(02 갱신), Pricing Rule Table, Cancellation/No-show Policy | §28 구조 항목 전부 결정 또는 명시 보류, 유스케이스 워크스루 통과 |
 | 2. 제품 설계 | 화면·흐름으로 번역 | Actor×UseCase, User Flow 3종, Review/Leader Authority Matrix, MVP 화면 목록 | 화면 목록이 §26 MVP 범위 전부 커버, Flow가 상태기계와 모순 없음 |
-| 3. 기술 설계 | 구현 가능한 명세 | 스택 결정, ERD, API 계약 | 02의 불변식 I1~I9 전부가 DB 제약/트랜잭션 규칙으로 매핑 |
-| 4. MVP 구현 | 거래 루프가 도는 제품 | 수직 슬라이스 S1~S5 | 슬라이스별 기준 (아래) |
+| 3. 기술 설계 | 구현 가능한 명세 | 스택 결정, ERD, API 계약 | 02의 불변식 I1~I11 전부가 DB 제약/트랜잭션 규칙으로 매핑 |
+| 4. MVP 구현 | 거래 루프가 도는 제품 | 수직 슬라이스 S1~S6 | 슬라이스별 기준 (아래) |
 
 Phase 1~3은 문서 작업이므로 겹쳐 진행할 수 있으나, **Phase 3은 Phase 1 완료 전에 시작하지 않는다** (정책 구조가 스키마를 결정하므로).
 
@@ -60,10 +61,10 @@ Phase 1~3은 문서 작업이므로 겹쳐 진행할 수 있으나, **Phase 3은
 | 산출물 | 내용 |
 |---|---|
 | 스택 결정 | **확정됨 (2026-08-08 조기 확정)**: TypeScript + Next.js(웹 단일+PWA) / PostgreSQL(Supabase) / Vercel / 알림톡+SMS(SOLAPI) — 근거·무료 티어 검증·마이그레이션 트리거는 [스택 결정](../tech/stack-decision.md). ERD 착수 시 재검증 |
-| ERD | 02의 엔티티·불변식을 스키마로. I1~I9 각각의 강제 수단(부분 유니크, 트랜잭션, 애플리케이션 규칙)을 명시. 자격 요구조건의 저장 형태(배열 vs 관계 테이블 — 추천 쿼리 빈도 기준) 결정 |
+| ERD | 02의 엔티티·불변식을 스키마로. I1~I11 각각의 강제 수단(부분 유니크, 트랜잭션, 애플리케이션 규칙)을 명시. 자격 요구조건의 저장 형태(배열 vs 관계 테이블 — 추천 쿼리 빈도 기준) 결정 |
 | API 계약 | 상태 전이 = API의 뼈대. 전이표의 행위자 칸이 곧 권한 모델 |
 
-**완료 기준**: 불변식 매핑표(I1~I9 → 제약) 완성. 스냅샷 불변·Accept 충돌 검사가 트랜잭션 설계로 증명됨.
+**완료 기준**: 불변식 매핑표(I1~I11 → 제약) 완성. 스냅샷 불변·Accepted 성립 충돌 검사(지명 수락·지원 승인 공히)가 트랜잭션 설계로 증명됨.
 
 ---
 
@@ -78,8 +79,9 @@ Phase 1~3은 문서 작업이므로 겹쳐 진행할 수 있으나, **Phase 3은
 | **S3. Booking 루프** | Booking Request(PriceSnapshot 동결, expires_at), Worker 수락/거절(I6 충돌 검사), Expired 처리, 파생 Booking 상태(fallback Open), 미충원 마감(closed_unfilled_count), 알림 | 전 자리 수락 → Booking Confirmed 도달. 거절 시 대안 재추천 |
 | **S4. 행사 당일 운영** | Check-in/out Attendance(타임스탬프 기반), D-3/D-1 확인(Attendance Risk 플래그), NoShow 처리, ReplacementRequest(Open→Matched→Fulfilled, 성공=현장 Check-in)→긴급 후보 탐색→대체 Assignment(Emergency Premium 스냅샷), Leader 출결 권한, IncidentReport | No-show 발생→대체 투입까지 Buyer 개입 없이 플랫폼 안에서 완결 |
 | **S5. 평가·신뢰도** | Review 입력(Phase 2 매트릭스), Reliability 계산 기초, ReliabilitySnapshot, Grade 반영 고리 | 행사 완료→평가→Reliability/Career 반영→다음 추천에 사용 |
+| **S6. 공개 모집·지원** (D6 — S3 완료 후 착수, S4·S5와 병행 가능) | ① EventRole 모집 토글(B3/B7) + P9 공고 탐색 + P5 공고 변형 + Application 생성 ② B7 지원자 검토·승인 → Accepted 물질화·충원 합류(I2/I3/I6 트랜잭션, 타 Role Open 지원 일괄 Closed·통지 포함) + 알림 3종 ③ P4 내 지원 탭(철회) ④ B2 날짜 시장 컨텍스트(집계 — 모집 데이터가 쌓여야 의미 있으므로 S6 마지막) | 지명 요청 0건으로 "공고 노출→지원→승인→충원 합류→확정"이 완결된다 |
 
-S3까지가 **최소 거래 루프**다. S3 완료 시점부터 실사용 파일럿(수동 운영 병행)이 가능하며, 이때부터 §29 가설 검증 데이터가 쌓인다.
+S3까지가 **최소 거래 루프**다. S6은 공급 유동성 보강 채널이므로 거래 루프(S1~S3)를 오염시키지 않고 그 산출물(스냅샷 동결·충원 파생·알림)을 소비한다 — S6 내부에서도 ①②가 코어, ③④는 후순위. S3 완료 시점부터 실사용 파일럿(수동 운영 병행)이 가능하며, 이때부터 §29 가설 검증 데이터가 쌓인다.
 
 **MVP 제외** (기획서 §26 "MVP 이후"와 동일): AI Matching, Dynamic Pricing, 안심번호/Relay Call, 정산 자동화, Enterprise Dashboard, Usage Rights, 고급 Leader Certification.
 

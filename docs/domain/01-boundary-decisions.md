@@ -1,5 +1,7 @@
-# 도메인 경계 결정 (D1~D5)
+# 도메인 경계 결정 (D1~D6)
 
+> Version 0.4 (2026-08-08) — D6 외부 리뷰 반영: I10 Role 단위 완화, 지원 시점 감사 필드(가격 보호), Standby Pool 기본 방향, 승인=계약 성립의 두 전제 명문화
+> Version 0.3 (2026-08-08) — D6 추가: 공개 모집·지원(Application) 하이브리드 확장. 부속 결정 A3(충돌 검사 시점 일반화)·A4(지명 채널 한정)·A6(사유 교체) 갱신
 > Version 0.2 (2026-08-08) — 외부 리뷰 반영: D2 충원 교착 해법 정정(미충원 마감, required_count 불변), Replacement 성공 재정의(도착 기준), Booking 파생 fallback Open, 부속 결정 A7(단일 Shift) 추가
 > 기준 문서: [기획서](../../README.md) §30 도메인 모델링 핵심 질문, §28 미결정 항목, Appendix B 의도적 미확정 항목
 > 성격: ADR-lite. 각 결정을 "질문 → 결정 → 근거 → 검토한 실패 시나리오 → 모델 영향" 순으로 기록한다.
@@ -19,6 +21,7 @@
 | D3 | Promoter ↔ Leader | 단일 Worker. Leader는 User Type이 아니라 LeaderCertification(L1~L3) 자격. 행사 내 Leader = leader형 EventRole에 대한 Assignment |
 | D4 | Grade ↔ Certification | 분리. Grade = 플랫폼 산정 등급(이력 + 산정 근거 보존). Certification = 검증 자격. Capability Premium은 Certification에만 |
 | D5 | Price 귀속 | 버전 관리 정책 테이블에서 계산 → Booking Request 시점에 Assignment당 불변 PriceSnapshot(단가×수량 라인아이템)으로 동결 |
+| D6 | 지명 ↔ 공개 모집 | 하이브리드. 공개 모집은 EventRole의 게시 속성, 지원은 Application 엔티티(정원 비점유), 승인 시 Accepted Assignment로 물질화 — Assignment 상태 집합·Booking 파생 무변경 |
 
 ---
 
@@ -144,7 +147,7 @@ Worker Base Rate / Skill Premium / Event Assignment Premium / Assignment 최종 
 ### 결정
 
 1. **가격의 정의는 버전 관리되는 `PricingPolicy`에 산다.** Grade→Base Rate 테이블, Certification Premium, Assignment Premium 규칙. 수치는 시장 검증에 따라 바뀌므로(기획서 §9 "정책 가설") 버전 없이는 과거 거래를 설명할 수 없다.
-2. **Team Builder 중에는 실시간 견적**(저장 없음, 표시용). **Booking Request 시점에 Assignment마다 불변 `PriceSnapshot`을 동결한다.**
+2. **Team Builder 중에는 실시간 견적**(저장 없음, 표시용). **Booking Request 시점에 Assignment마다 불변 `PriceSnapshot`을 동결한다.** (D6 확장: 지원 승인 경로에서는 승인 시점에 동결 — 02 I5의 "최초 구속 상태 진입 시" 일반화)
 3. **스냅샷은 라인아이템 구조다**: `(type, unit_rate, planned_qty, amount)` + `policy_version` + 적용 Grade. base / capability premium / assignment premium / fixed allowance가 각각 라인이다. 단가와 수량을 분리 저장하므로 **정산 = 동결 단가 × Attendance 실적 + 고정수당** — 연장 근무, 중도 이탈, 부분 근무가 모델 변경 없이 정산된다.
 4. **Booking 총액 = 활성 Assignment 스냅샷의 합계**(파생값). 요청 시점이 달라 정책 버전이 섞여도 무해하다 — 스냅샷이 Assignment 단위이기 때문이다.
 5. **Replacement Assignment는 자기 스냅샷을 새로 동결한다**(Emergency Premium 라인 포함). 원 Assignment의 스냅샷은 건드리지 않는다.
@@ -158,23 +161,64 @@ Worker Base Rate / Skill Premium / Event Assignment Premium / Assignment 최종 
 
 ### 모델 영향
 
-- 엔티티: `PricingPolicy`(버전별 불변 행, effective_from/to — 갱신은 새 버전 발행), `PriceSnapshot`(Assignment당 1, Requested 진입 시 필수, PricingPolicy를 FK+version으로 참조하되 해석은 자체 라인아이템만으로 완결).
+- 엔티티: `PricingPolicy`(버전별 불변 행, effective_from/to — 갱신은 새 버전 발행), `PriceSnapshot`(Assignment당 1, 최초 구속 상태 진입 시 필수 — 지명 Requested 진입/지원 승인(D6), PricingPolicy를 FK+version으로 참조하되 해석은 자체 라인아이템만으로 완결).
 - Booking에는 총액 컬럼이 필요 없다(파생). 캐시가 필요해지면 그때 추가한다.
+
+---
+
+## D6. 지명 ↔ 공개 모집 — 하이브리드 매칭, 지원은 승인으로만 계약이 된다
+
+### 질문 (2026-08-08 하이브리드 전환 결정)
+
+추천 주도(지명 오퍼) 모델에 공개 모집·프로모터 지원을 추가한다. 모집을 Event 상태로 둘지 EventRole 속성으로 둘지, 지원을 Assignment의 새 상태로 둘지 별도 엔티티로 둘지, 지원이 정원(I3)·가격 동결(I5)·시간 겹침(A3)·조건 잠금(I7)과 어떻게 만나는지 결정해야 한다.
+
+### 결정
+
+1. **공개 모집은 EventRole 단위 게시 속성이다.** `posted_at`(최초 게시, 불변 — I7 래치 앵커), `posting_closed_at`(마감, 재게시 시 클리어). "모집 중"은 파생 predicate(posted ∧ ¬closed ∧ Event ∈ {TeamBuilding, BookingPending, Confirmed}). **공고(JobPosting)는 엔티티가 아니다** — 기획서 §2.1 "구인 공고 서비스가 아니다"의 구조적 표현. Event 상태는 바뀌지 않는다(A6 유지, 사유 갱신).
+2. **지원은 별도 `Application` 엔티티다.** `Open → Approved | Declined | Withdrawn | Expired | Closed`. Assignment 상태 집합은 불변이다. "Assignment에 Applied 상태 추가" 안은 기각 — 지원자는 정원의 수 배가 정상이므로 Applied를 활성으로 세면 I3이 깨지고, 비활성으로 빼면 "활성"의 정의가 갈라져 I2·Booking 파생·Team projection 전부에 예외가 번진다. 또한 승인 전 Assignment는 Booking FK가 없고(D2 균열), 스냅샷 없는 Assignment가 생기며(I5 균열), 거절의 행위자 의미가 역전된다(Assignment.Declined는 Worker 행위, 지원 거절은 Buyer 행위).
+3. **승인 = 원자 트랜잭션으로 Accepted Assignment 물질화.** Assignment 생성→Accepted(application_id 기록 — Replacement의 생성→Requested와 동형의 진입 경로 추가) + PriceSnapshot 동결(I5 개정) + I2/I3/I6/I8 검사 + Booking 없으면 생성(첫 접점이 승인인 행사, I1) + Event가 TeamBuilding이면 BookingPending으로 + **같은 (worker, event)의 나머지 Open 지원 일괄 Closed(OTHER_ROLE_APPROVED)**. D1의 원칙 반복이다: 의사 표시(추천 후보/지원)는 기록, 계약은 Assignment로 물질화. **승인만으로(Worker 재수락 없이) 계약이 성립하는 전제는 둘이다**: ① I7 조건 잠금 — 지원자가 본 조건이 승인 시점까지 불변, ② 가격 보호 — 동결가가 지원 당시 표시가(결정 6의 감사 필드)보다 낮으면 Worker 재확인 `[정책]`. 이 둘이 있어야 "지원 = 사전 동의"가 성립한다.
+4. **지원은 정원을 점유하지 않는다. 점유는 승인이다.** 점유 = 활성 Assignment 전부(Selected·Requested·Accepted·Confirmed — I3의 활성 기준과 동일)다. 같은 자리에 지명 Requested 1건(A4)과 지원 N건이 병행 가능하지만, **Requested 또는 Selected가 점유 중인 자리의 승인은 I3에서 막힌다**(철회·제거 후 승인). 지원은 (worker, event_role)당 1건이며 같은 행사의 복수 Role 동시 지원은 허용된다(I10 — 계약의 단일성은 승인 시점의 I2가 강제).
+5. **I7 잠금 래치 확장**: 잠금 시점 = min(첫 Booking Request, 첫 공개 게시). 게시 철회로 풀리지 않는다. 지원자가 보고 지원한 조건의 보호.
+6. **게시 단가는 열람 시 본인 Grade 기준 계산 표시, 동결은 승인 시.** 열람 자체는 저장하지 않되, **지원 시점에 Application에 감사 필드 3개를 기록한다**: `displayed_amount`(지원 당시 표시 예상액), `pricing_policy_version_at_apply`, `grade_at_apply` — 지원 트랜잭션 안에서 서버가 표시 로직을 재실행한 결과다(클라이언트 신고값 아님 — 신뢰 경계). 이 기록은 **표시의 증거이지 계약 가격이 아니다**: 라인아이템이 없고 정산·동결에 구속력이 없으며, 계약 가격은 여전히 승인 시 동결되는 PriceSnapshot 하나다(I5 무변경). 재구성(PricingPolicy 버전 + GradeHistory)은 "정책상 옳았던 가격"만 재현할 뿐 표시 로직 버그·정책 버전 전환 경계·표시 방식 변형에서 "Worker가 실제로 안내받은 금액"을 재현하지 못한다 — 분쟁 시 1차 근거는 감사 필드, 재구성은 교차 검증이다. 이 데이터는 지원 순간에만 포착 가능하고 사후 backfill이 불가능하므로, 재확인 정책이 Phase 1 몫이어도 필드는 지금 둔다.
+7. **게시 마감은 신규 접수 차단만이다.** 접수된 Open 지원은 마감 후에도 검토·승인 가능하다. 일괄 종결(Closed)은 행사 취소·행사 시작 시각 경과(I11)와 계약 성립 supersede(지명 성립·타 Role 승인)에서만 구조적으로 일어난다. **정원 충족 시에도 잔여 Open 지원은 강제 종결하지 않는 것을 기본 방향으로 한다(Standby Pool)** — 확정 후 이탈·결원 시 Buyer가 기존 지원자를 즉시 승인해 재충원하는 백업 풀이며, Replacement의 콜드콜 탐색보다 싸고 빠른 1차 수단이 된다. 대기의 상한은 지원 expires_at `[정책]`과 행사 시작 시각(I11)이 구조적으로 보장한다. 일괄 종결·통지의 세부는 `[정책]`.
+
+### 근거
+
+- 새 메커니즘이 아니라 기존 메커니즘에 합류시킨다: 정원은 I3 그대로, 가격은 스냅샷 동결 시점만 일반화, 겹침은 A3의 시점 정의만 "Accepted 성립"으로 일반화, Booking 파생은 무변경(승인이 Accepted Assignment를 만드는 순간에만 파생에 나타난다).
+- 지명과 지원의 경합은 전부 기존 원칙 "먼저 성립한 쪽이 이긴다"(A3)의 동형으로 풀린다 — 마지막 자리 동시 승인(I3), 승인 직전 겹침(I6), 지원+지명 병존(I2).
+
+### 검토한 실패 시나리오
+
+- **동시 승인 경합**: 잔여 1자리에 승인 2건 → I3 트랜잭션 직렬화로 늦은 쪽 실패, Application은 Open 유지. 실패 지원의 후처리(자동 Closed — 사유 CAPACITY_FILLED — vs 수동 반려 vs Standby 유지)는 `[정책]`. 같은 Worker의 두 Role 승인이 동시에 실행되는 경우도 동형 — I2 직렬화로 한쪽만 성립, 진 쪽 지원은 이긴 트랜잭션의 supersede가 Closed(OTHER_ROLE_APPROVED) 처리.
+- **승인 직전 겹침**: Worker가 지원 후 다른 행사의 겹치는 지명을 먼저 수락 → 승인이 I6에서 실패. "승인 가능 여부"는 지원자 목록의 파생 표시(라이브 프리체크)로 처리하고 상태를 추가하지 않는다.
+- **지원+지명 동시 존재**: 병존 허용, 성립 순간만 I2가 방어. 지명 수락 성립 시 같은 (worker, event)의 Open 지원(I10이 Role 단위이므로 복수일 수 있음 — supersede 범위는 event 단위 유지) **일괄** 자동 Closed(사유 DIRECT_ASSIGNMENT_ACCEPTED). 승인이 먼저인데 자기 Selected/Requested가 살아 있으면 기존 전이(Removed/Cancelled)로 자동 종결 후 승인 진행하고 나머지 자기 Open 지원도 일괄 Closed(OTHER_ROLE_APPROVED), Accepted/Confirmed가 있으면 승인 거부.
+- **공개 모집 중 행사 취소**: Booking이 아직 없을 수 있어(승인 전) Booking Cancel 연쇄로는 부족 → Event 취소 훅에서 게시 마감 + Open 일괄 Closed(I11). 지원 이력은 종결 상태로 보존.
+- **지원자 있는 미충원 마감**: 유효 정원 축소로 당장 승인 불가지만 이후 이탈로 자리가 다시 날 수 있어 강제 종결하지 않는다 — 결정 7의 Standby 기본 방향과 정합(종결을 택할 경우 사유 = ROLE_CLOSED, 세부 `[정책]`). "지원자가 있는데 마감했다"는 기록이 수요-공급 미스매치 분석 자산이 된다.
+- **게시 철회 후 조건 변경**: 철회-수정-재게시 루프는 열람과 지원 사이 레이스에서 조건 보호를 뚫는다 → 래치(결정 5)로 원천 차단. 변경 = 취소 후 재생성(D5 결정 6과 동일 철학). V2 완화 경로: "활성 Application 0 + 게시 철회" 한정 조건부 해제.
+- **승인 시점 가격 변동**: 지원 열람가(정책 v3·P2) 이후 정책 v4 발행 또는 P3 승급 → 동결가가 표시가와 다를 수 있다. 1차 근거는 지원 시점 감사 필드(결정 6 — displayed_amount 직접 참조), 재구성은 교차 검증. 하락 시 Worker 재확인 요부는 `[정책]`이며 비교 기준 = displayed_amount.
+- **정원 충족 후 잔여 지원(Standby Pool)의 함정 4개**: ① 기약 없는 대기 → expires_at `[정책]` + I11(행사 시작 시각)이 상한. "정원 충족 — 대기"는 충원 현황 projection의 파생 표시다(상태 추가 없음). 지원은 정원 비점유이므로 대기 중 다른 행사 수락에 제약이 없다 — 겹치게 되면 승인이 I6에서 막힐 뿐이다. ② 지원~결원 사이 신선도 → 겹침은 승인 트랜잭션의 I6이 승인 시점 기준으로 검사(A3)하므로 구조적으로 안전. 오래된 지원의 사전 동의 효력(승인 전 재확인 요부)은 `[정책]`. ③ **같은 결원, 두 가격**: Replacement 경로는 Emergency Premium 스냅샷, Standby 승인 경로는 일반 단가로 동결된다. 모델은 이를 이미 수용하며(스냅샷은 Assignment 단위·불변 — D5의 정책 버전 혼재와 동형) 경제적으로도 정당하다(프리미엄은 콜드콜 유인 비용, Standby는 자발적 사전 동의). 임박 승인에 프리미엄 라인을 붙일지는 PricingPolicy의 Assignment Premium 규칙으로 Phase 1에서 결정 `[정책]`. ④ D-3 이후 성립한 Assignment의 확인 → 지난 체크포인트는 등록하지 않고 즉시 확인 1회로 대체 `[정책]`(02 §5). Standby 승인으로 결원이 해소되면 진행 중 ReplacementRequest는 Cancelled(요청 철회 — 결원 해소)로 정리한다.
+
+### 모델 영향
+
+- 엔티티 추가: `Application`(status·closed_reason·감사 필드 3 — displayed_amount/pricing_policy_version_at_apply/grade_at_apply). 엔티티 제외 확인: JobPosting(게시는 EventRole 속성. 재게시 이력 로그는 02 §10 열린 이슈).
+- EventRole에 `posted_at`, `posting_closed_at`. Assignment에 `application_id`(0..1).
+- Assignment 진입 경로 추가(생성→Accepted — 부수효과로 같은 event의 잔여 자기 Open 지원 일괄 Closed), 상태 집합 불변. Booking 생성 트리거 일반화(첫 요청 또는 첫 승인).
+- 불변식: I5·I7 개정, I10(**Role 단위**)·I11(**시각 기반** — Confirmed 미도달 행사 포함) 신설, A3 개정, A4·A6 비고 갱신 — 상세는 [도메인 모델 §7](02-domain-model.md).
 
 ---
 
 ## 부속 결정
 
-D1~D5를 검증하는 과정에서 함께 확정한 것들이다.
+D1~D5를 검증하는 과정에서 함께 확정한 것들이다. A3·A4·A6은 D6(공개 모집·지원)에서 갱신되었다.
 
 | # | 결정 | 비고 |
 |---|---|---|
 | A1 | Worker당 Event당 활성 Assignment 최대 1 | 부분 유니크. Declined는 비활성이므로 거절자가 같은 행사의 다른 Role에 긴급 투입되는 것은 가능 |
 | A2 | Availability는 참고 정보로 유지, Booking 상태를 미러링하지 않는다 | 기획서 §11/§23.4의 Soft Hold·Confirmed·Working 상태 제거. 이중 진실 원천 + 동기화 버그 공장 방지 |
-| A3 | 시간 충돌은 **Accept 시점에 강제**한다 | Worker의 기존 Accepted/Confirmed Assignment와 겹침 검사(트랜잭션/DB 제약 — 신뢰 경계). 추천 시점엔 필터로만. 겹치는 두 요청을 다 수락하려 하면 먼저 수락한 쪽이 이긴다 |
-| A4 | 빈 자리당 동시 Requested 1건 (순차 후보) — 정원 불변식(02 I3)의 따름정리로 강제되며 별도 Slot 개념이 필요 없다 | §10.2의 Primary/Alternative 병렬 요청은 V2 (그때 불변식을 "Requested 제외 활성 ≤ 유효 정원"으로 완화) |
+| A3 | 시간 충돌은 **Accepted 성립 시점에 강제**한다 — 지명 수락과 지원 승인(D6) 공히 | Worker의 기존 Accepted/Confirmed Assignment와 겹침 검사(트랜잭션/DB 제약 — 신뢰 경계). 추천·게시 시점엔 필터로만. 겹치는 두 건 중 먼저 성립한 쪽이 이긴다 |
+| A4 | 빈 자리당 동시 Requested 1건 (순차 후보) — 정원 불변식(02 I3)의 따름정리로 강제되며 별도 Slot 개념이 필요 없다 | **지명 채널에만 적용.** Application은 정원 비점유이므로 같은 자리에 지명 1건 + 지원 N건 병행 가능(D6). §10.2의 Primary/Alternative 병렬 요청은 V2 (그때 불변식을 "Requested 제외 활성 ≤ 유효 정원"으로 완화) |
 | A5 | Soft Hold는 MVP 보류 | §28 열린 정책으로 유지 |
-| A6 | Event 상태에서 `Recruiting` 제외 | 흐름이 공개 지원이 아니라 추천 주도이므로 (§23.1 후보에서 제거) |
+| A6 | Event 상태에서 `Recruiting` 제외 | v0.3 사유 교체(구 사유 "공개 지원이 아니라 추천 주도이므로"): **공개 모집(D6) 도입 후에도 유지** — 모집은 EventRole 단위 게시 속성이며 Event lifecycle과 직교한다(TeamBuilding·BookingPending·Confirmed 어디서든 Role별 게시 가능 — 상태로 승격하면 조합 폭발) |
 | A7 | MVP의 Event는 단일 근무 시간대(Single Shift)를 전제한다 | 다일 전시·교대 행사는 날짜/교대별 Event 분리로 우회. 업그레이드 경로: Event—EventShift—EventRole 계층 삽입. ERD 착수 전 재확인 대상 |
 
 ---

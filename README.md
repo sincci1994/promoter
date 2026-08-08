@@ -92,6 +92,8 @@ Buyer가 원하는 인력을 찾기 위해 담당자에게 요구사항을 전�
 
 핵심 서비스 단위는 단일 프로모터가 아니라 **Event Team**이다.
 
+매칭의 기본 경로는 플랫폼 추천이다. 여기에 보완 채널로 **공개 모집**을 지원한다(2026-08-08 하이브리드 확장, [D6](docs/domain/01-boundary-decisions.md)): Buyer는 특정 역할을 공개 게시할 수 있고, 프로모터가 지원하면 Buyer의 승인으로만 계약이 성립한다. 이는 구인 게시판이 아니다 — 공고는 독립된 게시물이 아니라 역할의 모집 속성이며, 지원자도 승인되는 순간 추천으로 선택된 인력과 동일한 팀 구성·확정·운영·평가 파이프라인에 합류한다. 핵심 서비스 단위가 Event Team이라는 정의는 변하지 않는다.
+
 ---
 
 ## 2.2 핵심 가치
@@ -1696,6 +1698,6 @@ Event
 설계 산출물은 기획서와 분리해 [`docs/`](docs/README.md)에서 관리한다.
 
 - [문서 맵](docs/README.md)
-- [도메인 경계 결정 D1~D5](docs/domain/01-boundary-decisions.md) — §30·Appendix B의 다섯 경계에 대한 결정
+- [도메인 경계 결정 D1~D6](docs/domain/01-boundary-decisions.md) — §30·Appendix B의 다섯 경계 + 공개 모집·지원(D6)에 대한 결정
 - [도메인 모델](docs/domain/02-domain-model.md) — 엔티티, 관계, 상태기계, 불변식
 - [개발 플랜](docs/plan/development-plan.md) — Phase 0~4 시스템 개발 순서

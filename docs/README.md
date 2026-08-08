@@ -7,18 +7,18 @@
 | 분류 | 문서 | 상태 |
 |---|---|---|
 | 기획 | [기획서 (서비스 전체)](../README.md) | v0.1 |
-| 도메인 | [01. 경계 결정 D1~D5](domain/01-boundary-decisions.md) | v0.2 |
-| 도메인 | [02. 도메인 모델](domain/02-domain-model.md) | v0.2 |
+| 도메인 | [01. 경계 결정 D1~D6](domain/01-boundary-decisions.md) | v0.4 |
+| 도메인 | [02. 도메인 모델](domain/02-domain-model.md) | v0.4 |
 | 정책 | `policy/pricing-rules.md` — 단가·승급·Premium·Fee | 예정 (Phase 1) |
 | 정책 | `policy/cancellation-noshow.md` — 취소·No-show·비용부담 | 예정 (Phase 1) |
 | 제품 | `product/use-cases.md` — Actor×UseCase | 예정 (Phase 2) |
-| 제품 | [User Flow 3종](product/user-flows.md) — Buyer/Promoter/Leader Flow | v0.1 |
+| 제품 | [User Flow 3종](product/user-flows.md) — Buyer/Promoter/Leader Flow + 공개 모집·지원 경로(D6) | v0.3 |
 | 제품 | `product/review-authority-matrix.md` — Review·Leader 권한 매트릭스 | 예정 (Phase 2) |
-| 제품 | [MVP 화면 목록](product/mvp-screens.md) — 인벤토리·§26 대조표 + [`screens/`](product/screens/) 화면별 정의 26파일(디자인 생성 입력 단위, 이 행으로 집합 등록) | v0.2 |
+| 제품 | [MVP 화면 목록](product/mvp-screens.md) — 인벤토리·§26 대조표 + [`screens/`](product/screens/) 화면별 정의 27파일 + 랜딩 재현 스펙([h0](product/screens/h0-landing.md))(디자인 생성 입력 단위, 이 행으로 집합 등록) | v0.3 |
 | 기술 | [스택 결정](tech/stack-decision.md) — 언어/프레임워크·DB·호스팅·알림 채널 | v0.1 (조기 확정 — 사유는 문서 헤더) |
 | 기술 | `tech/erd.md` — ERD·제약 매핑 | 예정 (Phase 3) |
 | 기술 | `tech/api.md` — API 계약 | 예정 (Phase 3) |
-| 플랜 | [개발 플랜 (Phase 0~4)](plan/development-plan.md) | v0.2 |
+| 플랜 | [개발 플랜 (Phase 0~4)](plan/development-plan.md) | v0.3 |
 
 ## 읽는 순서
 
