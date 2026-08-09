@@ -3,7 +3,7 @@
 > 모든 화면 프롬프트에 함께 입력한다 — 사용법: 이 파일 + 해당 화면 파일 2개를 첨부. 화면 목록은 [MVP 화면 목록](../mvp-screens.md).
 
 - **제품**: B2B 행사 인력 매칭 플랫폼. Buyer(행사 대행사·브랜드 담당자)가 행사를 만들고 추천된 프로모터 팀을 편집·예약하며, Worker(프로모터/Leader)가 모바일로 수락·근무·출결한다. 톤: 신뢰감 있는 업무 도구 — 소비자 앱 같은 장식 배제, 정보 밀도와 스캔 속도 우선.
-- **디바이스 기준**: 데스크탑 1280px+(Buyer 화면), 모바일 390px(Worker/Leader 화면 — 홈 화면 설치 PWA로 실행될 수 있음). "양쪽"은 반응형 필수.
+- **디바이스 기준**: 공용 화면(홈·공고 등, 2026-08-09 IA)은 390px~1280px+ 완전 반응형(`lg`에서 레이아웃 전환). Buyer 전용 화면은 데스크탑 1280px+, Worker 전용 화면은 모바일 390px(홈 화면 설치 PWA로 실행될 수 있음).
 - **컴포넌트**: Tailwind CSS + shadcn/ui 기준(버튼/카드/다이얼로그/폼/배지/시트) — 토큰·테마는 아래 [디자인 시스템](#디자인-시스템) 절.
 - **상태 배지 시맨틱**(Assignment/Booking/Event 공통): 대기·응답 필요=amber, 진행 중=blue, 확정·성공=green, 거절·만료·취소·NoShow=red, 종결 중립(Removed/Completed)=gray. 상태 이름은 한국어 라벨 + 원문 병기 없이 한국어만(수락 대기/수락됨/확정/거절/만료/취소/노쇼/완료). **Application(D6) 매핑**: 검토 대기(Open)=amber, 승인됨(Approved)=green, 반려(Declined)·만료(Expired)=red, 철회(Withdrawn)·마감(Closed)=gray. 마감 배지는 closed_reason 한국어 라벨 병기(예: 행사 취소·다른 역할 승인·모집 종료). 정원 충족 상태의 Open은 amber 유지 + "대기(Standby)" 병기 — 별도 상태가 아니라 파생 표시(도메인 모델 §8), 표시 UX `[정책]`.
 - **연락처 비공개 원칙**(기획서 §14): 어떤 화면에도 Worker의 전화번호·이메일·SNS를 노출하지 않는다. 연락 관련 UI는 "플랫폼 안내를 확인하세요" 수준(MVP).
@@ -15,7 +15,7 @@
 ## 디자인 시스템
 
 ### 테마
-- **Buyer 데스크탑 = 라이트, Worker/Leader 모바일 = 다크**(랜딩 다크 계승). A1·A2(로그인·가입)와 A3는 다크, A4는 라이트.
+- **공용 화면(홈·공고 등)과 Buyer 화면 = 라이트, Worker 전용 모바일 화면 = 다크**(랜딩 다크 계승). 라이트 페이지 안의 Worker향 구획은 `dark` 클래스 스코프로 다크 서피스를 쓸 수 있다(홈 CTA 패널 참조).
 - 두 테마 모두 웜 뉴트럴 + spot 오렌지 + 동일 폰트로 브랜드 통일. 앱 화면은 아래 시맨틱 토큰만 사용 — 랜딩 raw 토큰(ink/paper/spot 직접 참조) 금지.
 - 한 화면 = 한 테마 고정(런타임 테마 전환 없음).
 
@@ -59,5 +59,5 @@
 - 다이얼로그·시트 등장은 shadcn 기본 애니메이션 그대로, 스켈레톤은 `animate-pulse`. 높이·위치가 움직이는 레이아웃 애니메이션 금지, `prefers-reduced-motion` 존중.
 
 ### 구현 노트
-- **테마 스코핑**: shadcn Tailwind v4 관행 그대로 — `globals.css`의 `:root`에 라이트 값, `.dark`에 다크 값(+`color-scheme: dark`)을 CSS 변수로 두고 `@theme inline`으로 연결, `@custom-variant dark (&:is(.dark *))` 선언. 루트 layout의 `bg-ink text-paper` 하드코딩은 제거하고, `(marketing)` layout 래퍼에 `bg-ink text-paper`(기존 유지), `(worker)` layout 래퍼에 `dark bg-background text-foreground`, `(buyer)`는 `bg-background text-foreground`(라이트 기본)를 준다. 코드 반영은 첫 앱 화면 구현 시점에 — 지금은 이 문서가 그때의 작업 지시서다.
-- **컴포넌트**: shadcn/ui는 첫 앱 화면 구현 착수 시 설치(new-york, neutral 베이스 — 현재 미설치). 설치가 생성한 `:root`/`.dark` 변수 값을 위 표의 값으로 교체하면 끝 — 토큰명이 shadcn 변수명과 동일하므로 매핑 레이어 없음. 커스텀 컴포넌트는 shadcn에 없는 것만(상태 배지, 인원 카드, 출결 보드 등).
+- **테마 스코핑(반영됨, 2026-08-09)**: `globals.css`에 구현 — `:root` 라이트 값, `.dark` 다크 값(+`color-scheme: dark`), `@theme inline` 연결, `@custom-variant dark` 선언. 루트 layout은 무색, `(marketing)` layout 래퍼가 `bg-ink text-paper`, 앱 페이지는 각자 `bg-background text-foreground`(다크 화면은 `dark` 클래스 추가).
+- **컴포넌트(설치됨, 2026-08-09)**: shadcn/ui — `components.json`은 classic 포맷(new-york·neutral)으로 수기 작성(최신 CLI 4.x는 init 체계가 바뀌어 `init` 대신 `add`만 사용). 신규 컴포넌트는 `npx shadcn@latest add <name>`으로 추가(현재 button·input). CSS 변수 값은 위 표의 값으로 교체 완료 — 토큰명이 shadcn 변수명과 동일하므로 매핑 레이어 없음. 커스텀 컴포넌트는 shadcn에 없는 것만(상태 배지 등).

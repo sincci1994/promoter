@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${pretendard.variable} ${clash.variable}`}>
-      <body className="bg-ink font-sans text-paper antialiased">
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>

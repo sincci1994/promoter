@@ -1,15 +1,84 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+/* 앱 화면 시맨틱 토큰 — 값의 출처: docs/product/screens/_common.md */
+:root {
+  --radius: 0.625rem;
+  --background: #f4f2ee;
+  --foreground: #0a0a0b;
+  --card: #ffffff;
+  --card-foreground: #0a0a0b;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0b;
+  --primary: #ff5c28;
+  --primary-foreground: #0a0a0b;
+  --secondary: #eceae4;
+  --secondary-foreground: #0a0a0b;
+  --muted: #eceae4;
+  --muted-foreground: #6b6a66;
+  --accent: #eceae4;
+  --accent-foreground: #0a0a0b;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #e2dfd8;
+  --input: #e2dfd8;
+  --ring: #ff5c28;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0a0a0b;
+  --foreground: #f4f2ee;
+  --card: #131315;
+  --card-foreground: #f4f2ee;
+  --popover: #1a1a1e;
+  --popover-foreground: #f4f2ee;
+  --primary: #ff5c28;
+  --primary-foreground: #0a0a0b;
+  --secondary: #1a1a1e;
+  --secondary-foreground: #f4f2ee;
+  --muted: #1a1a1e;
+  --muted-foreground: #8b8a86;
+  --accent: #1a1a1e;
+  --accent-foreground: #f4f2ee;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: #26262a;
+  --input: #26262a;
+  --ring: #ff5c28;
+}
+
 @theme inline {
   --font-sans: var(--font-pretendard), "Apple SD Gothic Neo", system-ui, sans-serif;
   --font-display: var(--font-clash), var(--font-pretendard), sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* 랜딩 raw 토큰 — 랜딩 전용, 앱 화면에서 직접 참조 금지(_common.md) */
 @theme {
   --color-ink: #0a0a0b;
   --color-ink-soft: #131315;
   --color-paper: #f4f2ee;
-  --color-muted: #8b8a86;
   --color-line: #26262a;
   --color-spot: #ff5c28;
 }
