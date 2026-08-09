@@ -35,7 +35,7 @@ export default async function JobDetailPage({
 
   return (
     <div className="min-h-svh bg-background text-base text-foreground lg:text-sm">
-      <SiteHeader />
+      <SiteHeader active="board" />
       <main className="mx-auto max-w-6xl px-4 pb-28 md:px-8 lg:pb-8">
         <div className="py-6">
           <Link

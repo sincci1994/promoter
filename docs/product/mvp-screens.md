@@ -13,7 +13,7 @@
 | [POST](screens/post.md) | 공고 등록 — 라이브 매칭·추천 팀 초안 | `/post` | 목업 구현(2026-08-09) |
 | [JOB](screens/job-detail.md) | 공고 상세 — 원터치 지원 | `/jobs/[id]` | 목업 구현(2026-08-09) |
 
-목업 공통: 데이터는 전부 가상(`src/lib/home-content.ts`·`buyer-flow-content.ts` — "API 연결 시 이 파일만 교체" 주석), 필터·견적·매칭 집계는 그 위에서 실제 클라이언트 계산으로 동작. 진행 타임라인은 공용 컴포넌트(`src/components/pipeline-timeline.tsx`, 마케팅/진행 모드).
+목업 공통: 데이터는 전부 가상(`src/lib/home-content.ts`·`buyer-flow-content.ts` — "API 연결 시 이 파일만 교체" 주석), 필터·견적·매칭 집계는 그 위에서 실제 클라이언트 계산으로 동작. 공용 컴포넌트: 헤더·푸터 `src/components/site-chrome.tsx`(랜딩 포함 전 페이지 — 소개(`/`)·공고(`/home`)·로그인·공고 등록(`/post`), 랜딩은 transparent 변형), 진행 타임라인 `src/components/pipeline-timeline.tsx`(마케팅/진행 모드).
 
 ## 다음 화면 후보 — 문서는 구현 착수 시 화면별로 작성
 

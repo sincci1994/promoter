@@ -15,10 +15,11 @@ export const site = {
   brand: "CAST",
   tagline: "행사 전문 인력 플랫폼",
   email,
+  // 로그인 구현 전 — 랜딩의 유일한 CTA는 내부 홈 입장(헤더·히어로 공용)
   nav: [
     {
-      label: "행사 문의",
-      href: `mailto:${email}?subject=${encodeURIComponent("[행사 문의]")}`,
+      label: "입장하기",
+      href: "/home",
     },
   ],
 };

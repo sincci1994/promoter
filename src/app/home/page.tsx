@@ -36,7 +36,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-svh bg-background text-base text-foreground lg:text-sm">
-      <SiteHeader />
+      <SiteHeader active="board" />
 
       {/* 검색 히어로 */}
       <section className="border-b bg-card">

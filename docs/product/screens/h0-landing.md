@@ -1,6 +1,6 @@
 # H0. 공개 랜딩 — 재현 프롬프트
 
-> **용도**: 이 문서 하나만 프롬프트로 입력하면 현재 랜딩(`src/app/(marketing)/`)을 동일하게 재현할 수 있도록, 코드에 흩어진 모든 값을 추출한 스펙이다. 앱 화면 규약([\_common.md](_common.md))과는 무관 — 랜딩은 별도 무드다. 소스: `src/components/landing/*` 6파일, `src/lib/landing-content.ts`, `src/app/globals.css`.
+> **용도**: 이 문서 하나만 프롬프트로 입력하면 현재 랜딩(`src/app/(marketing)/`)을 동일하게 재현할 수 있도록, 코드에 흩어진 모든 값을 추출한 스펙이다. 앱 화면 규약([\_common.md](_common.md))과는 무관 — 랜딩은 별도 무드다. 소스: `src/components/landing/*` 5파일, `src/lib/landing-content.ts`, `src/app/globals.css`. **헤더는 예외적으로 앱과 공용**(`src/components/site-chrome.tsx`, 2026-08-09 통합).
 
 ## 목표·전제
 
@@ -27,8 +27,8 @@
 
 ## 레이아웃 3층
 
-**헤더** — `fixed` 상단 z-50, **`mix-blend-difference`**(배경 밝기에 따라 자동 반전), `px-5 py-5 md:px-10`.
-좌: `CAST` 워드마크(`#top` 앵커, Clash `text-xl font-semibold tracking-widest uppercase`) / 우: `행사 문의`(mailto, `text-sm tracking-wide opacity-80` hover 100).
+**헤더** — 앱과 공용인 `SiteHeader`의 `transparent` 변형(`absolute` 상단 z-50, 배경·보더 없음), `px-5 py-3.5 md:px-10`. 랜딩 래퍼에 `dark` 클래스가 있어 시맨틱 토큰이 다크 값으로 풀린다(구 mix-blend-difference 방식은 폐기 — 2026-08-09).
+좌: `CAST` 워드마크(`/home` 링크, Clash `text-xl font-semibold tracking-widest uppercase`) / GNB(`md+`): `소개(/, 현재 페이지 활성)` · `공고(/home)` · `행사·광고` · `기업 서비스` / 우: `로그인`(ghost) + `공고 등록`(primary, `/post`).
 
 **히어로 중앙 오버레이** — 절대배치 z-40, 중앙 정렬 세로 컬럼, `pointer-events-none`(CTA만 auto), 전체 `text-shadow: 0 2px 24px rgb(10 10 11 / 0.9)`:
 
@@ -36,7 +36,7 @@
 2. h1 `무대를 완성하는` / `사람들` 2줄 — `text-[clamp(2.2rem,6vw,5.5rem)] leading-[1.05] font-extrabold tracking-tight`
 3. sub `검증된 프로모터 팀을 추천받고, 예약부터 현장 운영까지 한 흐름으로.` — `mt-5 max-w-md text-sm md:text-base text-paper/70`
 4. 통계 3개 — `mt-6 gap-6 md:gap-8`, 숫자 Clash `text-xl md:text-2xl font-semibold` + 접미사(`text-sm text-paper/60`) + 라벨(`text-[11px] text-paper/50`): **128건 누적 프로젝트 · 1,840명 누적 파견 · 87% 재의뢰율**
-5. CTA `행사 문의` — `mt-8 text-sm uppercase tracking-wide`, 밑줄 `border-b border-paper/40 pb-1`, hover 시 보더·텍스트 spot
+5. CTA `입장하기`(→ `/home` — 내부 홈 진입, 로그인 구현 전 유일 CTA) — `mt-8 text-sm uppercase tracking-wide`, 밑줄 `border-b border-paper/40 pb-1`, hover 시 보더·텍스트 spot
 
 **하단 바** — absolute `inset-x-5 md:inset-x-10 bottom-5` z-40, `text-[11px] tracking-wide text-paper/50`: 좌 `hello@cast.example`(mailto, hover paper) / 우 `© 2026 CAST — 행사 전문 인력 플랫폼`.
 
