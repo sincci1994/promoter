@@ -1,5 +1,6 @@
 # 도메인 모델
 
+> Version 0.5 (2026-08-10) — worker_interview 수용: WorkerProfile 옵트인 연락 메모·불가 조건 필드, §10 열린 이슈 추가(행사 특성 조건 축·Event Room·온도/P2P Review·신규 공고 알림)
 > Version 0.4 (2026-08-08) — D6 외부 리뷰 반영: I10 Role 단위 완화, Application 감사 필드·closed_reason, Standby Pool 기본 방향, I11 시각 기반 재정의, 충원 projection 산식 명시
 > Version 0.3 (2026-08-08) — D6 반영: Application 엔티티·상태기계, EventRole 게시 속성, Assignment 진입 경로 추가(생성→Accepted), I5·I6·I7 개정, I10·I11 신설
 > Version 0.2 (2026-08-08) — 외부 리뷰 반영: Booking 파생 갭 제거(fallback Open), 미충원 마감(closed_unfilled_count), Replacement 성공 재정의, Attendance 구조화, Capacity 용어 통일
@@ -24,7 +25,7 @@
 |---|---|---|
 | **User** | 계정·인증 단위 | email, phone(비공개), status |
 | **BuyerProfile** | 발주자 프로필 (User당 0..1) | organization_name(문자열), 담당자 정보 |
-| **WorkerProfile** | 공급자 프로필 (User당 0..1). Promoter 활동의 주체 | 사진/Portfolio, 자가신고 skill 태그[], 선호 행사 유형, 활동 지역 |
+| **WorkerProfile** | 공급자 프로필 (User당 0..1). Promoter 활동의 주체 | 사진/Portfolio, 자가신고 skill 태그[], 선호 행사 유형, 활동 지역, 옵트인 연락 메모(인스타·연락처 — 기본 미등록, 노출 범위 `[정책]`, 기획서 §14.1), 불가 조건(하드 제외 — 행사 특성 조건 축과 동일 태그, §10) |
 | **GradeHistory** | Grade(P1~P4) 유효기간 이력. Base Rate의 근거 | grade, effective_from/to, 산정 근거 입력값(JSON) |
 | **Certification** | 검증 자격의 정의 (Leader L1~L3, 검증 Skill) | code, kind: leader\|skill, level |
 | **WorkerCertification** | Worker ↔ Certification M:N | granted_at, revoked_at |
@@ -286,9 +287,12 @@ stateDiagram-v2
 - 정책 수치 전부(단가, 기한, 프리미엄) — Phase 1 Pricing Rule Table
 - 다중 Shift/다일 행사 — MVP는 단일 근무 시간대 전제([01 부속결정 A7](01-boundary-decisions.md)), 필요해지면 Event—EventShift—EventRole 계층 삽입
 - 자격 요구조건의 저장 형태(배열 vs 관계 테이블) — 의미는 값 객체로 확정, 형태는 Phase 3 ERD에서 추천 쿼리 빈도 기준으로 결정
-- 공개 모집·지원 정책 일체(공개 범위·마감 규칙·Role별 지원자 상한·**행사당 지원 상한·재지원 제한/쿨다운(반려 직후 재지원 스팸 방지)**·만료 기한·일괄 종결과 통지·**지원 접수 알림 묶음/철회 통지 여부**·가격 하락 시 재확인(비교 기준 = Application.displayed_amount)·**Standby "대기" 표시 UX**, [01 §D6](01-boundary-decisions.md)) — Phase 1
+- 공개 모집·지원 정책 일체(공개 범위·마감 규칙·Role별 지원자 상한·**행사당 지원 상한·재지원 제한/쿨다운(반려 직후 재지원 스팸 방지)**·만료 기한·일괄 종결과 통지·**지원 접수 알림 묶음/철회 통지 여부**·**신규 공고 매칭 알림(옵트인·가용일/지역 매칭·일 1회 다이제스트 — worker_interview 수용)**·가격 하락 시 재확인(비교 기준 = Application.displayed_amount)·**Standby "대기" 표시 UX**, [01 §D6](01-boundary-decisions.md)) — Phase 1
 - 결원 충원 두 채널의 가격 정합성 — Replacement(Emergency Premium 동결) vs Standby 지원 승인(일반 단가). 임박 승인에 프리미엄 라인을 붙일지는 PricingPolicy의 Assignment Premium 규칙에서 — Phase 1
 - `EventRolePostingLog`(append-only 게시 이력: OPEN/CLOSE/REOPEN, RecommendationRun 동형) — posting_closed_at이 재게시 시 클리어되어 **재게시 횟수·모집기간 이력이 손실됨을 인지**. 게시→첫 지원 시간·재게시율 등 Marketplace KPI가 필요해지는 시점에 도입(MVP 제외)
+- 행사 특성 조건(condition) 축의 구조화 — 프리미엄 입력(야외·열악·교대 수, 기획서 §9.3)·워커 불가 조건(하드 제외)·기존 소프트 태그의 3용도 관계 정리. 태그 매칭으로 프리미엄이 새는 것을 막는 D4 결정 3 논리 적용 — Phase 1 Pricing Rule Table + Phase 3 ERD
+- Event Room(행사 방) — Booking 확정 시 자동 개설되는 행사 전용 방(기획서 §14.2·§17, worker_interview 단톡방 수용). 참여자 규칙·메시지 모델은 구현 착수 시 엔티티 설계(현재 비-엔티티)
+- 온도(공개 지표) — Public Rating의 온도형 구체화(기획서 §20)와 Promoter 간 Review 행(§19.6)의 매트릭스 반영 — Phase 2 Review Matrix
 
 ---
 

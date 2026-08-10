@@ -10,12 +10,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { mockSession, type JobPost } from "@/lib/home-content";
+import { jobHourly, mockSession, type JobPost } from "@/lib/home-content";
 import { won } from "@/lib/utils";
 
 const ONCE_KEY = "cast_applied_once"; // 첫 지원에만 교육적 풀 시트를 보여주기 위한 플래그
 
 export function ApplyDock({ job }: { job: JobPost }) {
+  const rate = jobHourly(job);
   const [open, setOpen] = useState(false);
   const [fullMode, setFullMode] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -68,7 +69,7 @@ export function ApplyDock({ job }: { job: JobPost }) {
       <aside className="hidden lg:block">
         <div className="sticky top-20 rounded-lg border bg-card p-5 shadow-sm">
           <p className="text-2xl font-semibold tabular-nums">
-            {won(job.rate)}
+            {won(rate.total)}
             <span className="text-sm font-normal text-muted-foreground">/h</span>
             <span className="ml-2 text-xs font-medium text-orange-700">
               {mockSession.grade} 기준
@@ -98,7 +99,7 @@ export function ApplyDock({ job }: { job: JobPost }) {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-card p-3 lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <p className="text-sm font-semibold tabular-nums">
-            {won(job.rate)}
+            {won(rate.total)}
             <span className="font-normal text-muted-foreground">/h</span>
             <span className="ml-1.5 text-xs font-medium text-orange-700">
               {mockSession.grade} 기준
@@ -176,7 +177,7 @@ export function ApplyDock({ job }: { job: JobPost }) {
               <div className="flex gap-2">
                 <dt className="w-12 shrink-0 text-muted-foreground">역할</dt>
                 <dd>
-                  {job.role} · {won(job.rate)}/h
+                  {job.role} · {won(rate.total)}/h
                   <span className="ml-1 text-xs text-orange-700">{mockSession.grade} 기준</span>
                 </dd>
               </div>

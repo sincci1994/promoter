@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils";
 
 // 전 페이지 공용 헤더 — 룩은 랜딩(풀폭·워드마크), 메뉴는 홈 기준.
 // transparent: 랜딩처럼 콘텐츠 위에 뜨는 투명 헤더(스크롤 없는 화면 전용).
+// 공고·행사 모집은 /home의 양면 탭(모바일에도 노출), 소개·기업 서비스는 md+.
 const NAV = [
-  { key: "intro", label: "소개", href: "/" },
+  { key: "intro", label: "소개", href: "/", mdOnly: true },
   { key: "board", label: "공고", href: "/home" },
-  { key: "ads", label: "행사·광고", href: "#" },
-  { key: "biz", label: "기업 서비스", href: "#" },
+  { key: "buyer", label: "행사 모집", href: "/home?tab=buyer" },
+  { key: "biz", label: "기업 서비스", href: "#", mdOnly: true },
 ] as const;
 
 export function SiteHeader({
@@ -34,16 +35,17 @@ export function SiteHeader({
         >
           CAST
         </Link>
-        <nav className="hidden items-center gap-6 text-sm md:flex">
+        <nav className="flex items-center gap-5 text-sm md:gap-6">
           {NAV.map((item) => (
             <Link
               key={item.key}
               href={item.href}
               className={cn(
-                "tracking-wide transition-colors",
+                "pb-0.5 tracking-wide transition-colors",
                 active === item.key
-                  ? "font-medium"
+                  ? "font-medium [box-shadow:inset_0_-2px_0_var(--color-primary)]"
                   : "text-muted-foreground hover:text-foreground",
+                "mdOnly" in item && item.mdOnly && "hidden md:inline",
               )}
             >
               {item.label}

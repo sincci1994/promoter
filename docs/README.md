@@ -14,7 +14,7 @@
 | 제품 | `product/use-cases.md` — Actor×UseCase | 예정 (Phase 2) |
 | 제품 | [User Flow 3종](product/user-flows.md) — Buyer/Promoter/Leader Flow + 공개 모집·지원 경로(D6) | v0.3 |
 | 제품 | `product/review-authority-matrix.md` — Review·Leader 권한 매트릭스 | 예정 (Phase 2) |
-| 제품 | [MVP 화면 목록](product/mvp-screens.md) — 인벤토리·§26 대조표 + [`screens/`](product/screens/) 화면별 정의 27파일 + 랜딩 재현 스펙([h0](product/screens/h0-landing.md))(디자인 생성 입력 단위, 이 행으로 집합 등록) | v0.3 |
+| 제품 | [MVP 화면 목록](product/mvp-screens.md) — 인벤토리(구인보드 IA) + [`screens/`](product/screens/) 화면별 정의 + 재현 스펙 2종([h0 랜딩](product/screens/h0-landing.md)·[HOME 내부 홈](product/screens/home.md) — 디자인 생성·UI/UX 개편 입력 단위, 이 행으로 집합 등록) | v0.5 |
 | 기술 | [스택 결정](tech/stack-decision.md) — 언어/프레임워크·DB·호스팅·알림 채널 | v0.1 (조기 확정 — 사유는 문서 헤더) |
 | 기술 | `tech/erd.md` — ERD·제약 매핑 | 예정 (Phase 3) |
 | 기술 | `tech/api.md` — API 계약 | 예정 (Phase 3) |

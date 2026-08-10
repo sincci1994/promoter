@@ -21,49 +21,51 @@ export function BuyerMiniForm() {
 
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
-      <h2 className="text-base font-semibold">조건만 입력하면 팀이 구성됩니다</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        게시 후 기다리지 않습니다 — 입력 즉시 예상 후보와 견적을 확인하세요.
-      </p>
-      <div className="mt-4 grid gap-2 sm:grid-cols-3">
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          aria-label="행사 유형"
-          className="h-11 rounded-md border border-input bg-transparent px-2.5 md:h-9 md:text-sm"
-        >
-          {EVENT_TYPES.map((t) => (
-            <option key={t}>{t}</option>
-          ))}
-        </select>
-        <Input
-          type="date"
-          value={dateStr}
-          min="2026-08-09"
-          max="2026-08-31"
-          onChange={(e) => setDateStr(e.target.value)}
-          aria-label="행사 일자"
-          className="h-11 md:h-9"
-        />
-        <Input
-          type="number"
-          value={headcount}
-          min={1}
-          max={50}
-          onChange={(e) => setHeadcount(Math.max(1, Number(e.target.value) || 1))}
-          aria-label="필요 인원"
-          className="h-11 md:h-9"
-        />
+      <div className="grid gap-2.5 sm:grid-cols-[1.2fr_1fr_0.8fr]">
+        <label className="flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
+          행사 유형
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="h-11 rounded-md border border-input bg-transparent px-2.5 text-base text-foreground md:h-10 md:text-sm"
+          >
+            {EVENT_TYPES.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
+          날짜
+          <Input
+            type="date"
+            value={dateStr}
+            min="2026-08-09"
+            max="2026-08-31"
+            onChange={(e) => setDateStr(e.target.value)}
+            className="h-11 text-foreground md:h-10"
+          />
+        </label>
+        <label className="flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
+          인원
+          <Input
+            type="number"
+            value={headcount}
+            min={1}
+            max={50}
+            onChange={(e) => setHeadcount(Math.max(1, Number(e.target.value) || 1))}
+            className="h-11 text-foreground md:h-10"
+          />
+        </label>
       </div>
-      <p className="mt-3 text-sm tabular-nums">
+      <p className="mt-3.5 rounded-md border border-orange-200 bg-orange-50 px-3.5 py-3 text-sm tabular-nums">
         이 날짜 가용 등록 후보{" "}
         <span className="font-semibold text-orange-700">{available}명</span> · 예상{" "}
         <span className="font-semibold">{won(minTotal)}</span>
         <span className="text-xs text-muted-foreground"> 부터 (8시간·기본 등급 기준)</span>
       </p>
-      <Button className="mt-4" asChild>
+      <Button className="mt-3.5 h-11 w-full" asChild>
         <Link href={`/post?type=${encodeURIComponent(type)}&day=${day ?? ""}&n=${headcount}`}>
-          팀 견적 미리보기 →
+          이 조건으로 공고 등록 →
         </Link>
       </Button>
     </div>

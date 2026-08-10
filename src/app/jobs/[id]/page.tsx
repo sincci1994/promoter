@@ -6,7 +6,14 @@ import { StatusBadge } from "@/components/home/bits";
 import { ApplyDock } from "@/components/jobs/apply-dock";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { GRADE_NAMES, GRADE_ORDER, GRADE_RATES } from "@/lib/buyer-flow-content";
-import { jobs, mockSession, urgentJobs, type JobPost } from "@/lib/home-content";
+import {
+  CONDITION_LABELS,
+  jobHourly,
+  jobs,
+  mockSession,
+  urgentJobs,
+  type JobPost,
+} from "@/lib/home-content";
 import { cn, won } from "@/lib/utils";
 
 const allJobs = [...urgentJobs, ...jobs];
@@ -32,6 +39,7 @@ export default async function JobDetailPage({
 }) {
   const job = findJob((await params).id);
   if (!job) notFound();
+  const rate = jobHourly(job);
 
   return (
     <div className="min-h-svh bg-background text-base text-foreground lg:text-sm">
@@ -55,6 +63,11 @@ export default async function JobDetailPage({
                 {job.urgent && <StatusBadge tone="red">급구</StatusBadge>}
                 {job.isNew && <StatusBadge tone="blue">신규</StatusBadge>}
                 {job.standby && <StatusBadge tone="amber">정원 충족 · 대기 지원</StatusBadge>}
+                {job.conditions?.map((c) => (
+                  <StatusBadge key={c} tone="neutral">
+                    {CONDITION_LABELS[c]}
+                  </StatusBadge>
+                ))}
                 <span className="ml-auto text-xs text-muted-foreground tabular-nums">
                   {job.dday ?? (job.closesIn ? `마감 ${job.closesIn}` : "")}
                 </span>
@@ -103,15 +116,31 @@ export default async function JobDetailPage({
             <section className="rounded-lg border bg-card p-5 shadow-sm md:p-6">
               <h2 className="text-base font-semibold">단가</h2>
               <p className="mt-2 text-2xl font-semibold tabular-nums">
-                {won(job.rate)}
+                {won(rate.total)}
                 <span className="text-sm font-normal text-muted-foreground">/h</span>
                 <span className="ml-2 text-xs font-medium text-orange-700">
                   {mockSession.grade} 기준
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                지금 보신 금액이 지원 기록에 남고, 승인 시점 금액으로 동결됩니다.
+                지금 보신 금액이 지원 기록에 남고, 승인 시점 금액으로 동결됩니다. 금액은
+                세전 기준 — 3.3% 원천징수 후 지급됩니다.
               </p>
+              <dl className="mt-3 space-y-1 border-t pt-3 text-xs tabular-nums">
+                {rate.lines.map((line, i) => (
+                  <div key={line.label} className="flex justify-between">
+                    <dt className="text-muted-foreground">{line.label}</dt>
+                    <dd>
+                      {i > 0 && "+"}
+                      {won(line.amount)}/h
+                    </dd>
+                  </div>
+                ))}
+                <div className="flex justify-between border-t pt-1 font-medium">
+                  <dt>합계(세전)</dt>
+                  <dd>{won(rate.total)}/h</dd>
+                </div>
+              </dl>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-xs tabular-nums">
                   <thead>

@@ -83,6 +83,16 @@
   --color-spot: #ff5c28;
 }
 
+/* Tailwind v4는 기본 보더가 currentColor(≈검정) — 시맨틱 토큰으로 되돌린다(shadcn v4 표준 베이스) */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
 ::selection {
   background: var(--color-spot);
   color: var(--color-ink);
@@ -100,6 +110,44 @@
     rgb(10 10 11 / 0.45) 45%,
     transparent 100%
   );
+}
+
+/* 급구 패널 — 사이렌 도트 펄스 / critical 마감 카운트다운 점멸 */
+.animate-siren-pulse {
+  animation: siren-pulse 1.6s ease-out infinite;
+}
+
+.animate-siren-blink {
+  animation: siren-blink 1.1s ease-in-out infinite;
+}
+
+@keyframes siren-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(220 38 38 / 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgb(220 38 38 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(220 38 38 / 0);
+  }
+}
+
+@keyframes siren-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-siren-pulse,
+  .animate-siren-blink {
+    animation: none;
+  }
 }
 
 .ring-card {

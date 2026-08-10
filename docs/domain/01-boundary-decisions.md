@@ -1,5 +1,6 @@
 # 도메인 경계 결정 (D1~D6)
 
+> Version 0.5 (2026-08-10) — worker_interview 수용: A7 비고에 교대 수의 근무 형태 프리미엄 흡수 경로 추가
 > Version 0.4 (2026-08-08) — D6 외부 리뷰 반영: I10 Role 단위 완화, 지원 시점 감사 필드(가격 보호), Standby Pool 기본 방향, 승인=계약 성립의 두 전제 명문화
 > Version 0.3 (2026-08-08) — D6 추가: 공개 모집·지원(Application) 하이브리드 확장. 부속 결정 A3(충돌 검사 시점 일반화)·A4(지명 채널 한정)·A6(사유 교체) 갱신
 > Version 0.2 (2026-08-08) — 외부 리뷰 반영: D2 충원 교착 해법 정정(미충원 마감, required_count 불변), Replacement 성공 재정의(도착 기준), Booking 파생 fallback Open, 부속 결정 A7(단일 Shift) 추가
@@ -219,7 +220,7 @@ D1~D5를 검증하는 과정에서 함께 확정한 것들이다. A3·A4·A6은 
 | A4 | 빈 자리당 동시 Requested 1건 (순차 후보) — 정원 불변식(02 I3)의 따름정리로 강제되며 별도 Slot 개념이 필요 없다 | **지명 채널에만 적용.** Application은 정원 비점유이므로 같은 자리에 지명 1건 + 지원 N건 병행 가능(D6). §10.2의 Primary/Alternative 병렬 요청은 V2 (그때 불변식을 "Requested 제외 활성 ≤ 유효 정원"으로 완화) |
 | A5 | Soft Hold는 MVP 보류 | §28 열린 정책으로 유지 |
 | A6 | Event 상태에서 `Recruiting` 제외 | v0.3 사유 교체(구 사유 "공개 지원이 아니라 추천 주도이므로"): **공개 모집(D6) 도입 후에도 유지** — 모집은 EventRole 단위 게시 속성이며 Event lifecycle과 직교한다(TeamBuilding·BookingPending·Confirmed 어디서든 Role별 게시 가능 — 상태로 승격하면 조합 폭발) |
-| A7 | MVP의 Event는 단일 근무 시간대(Single Shift)를 전제한다 | 다일 전시·교대 행사는 날짜/교대별 Event 분리로 우회. 업그레이드 경로: Event—EventShift—EventRole 계층 삽입. ERD 착수 전 재확인 대상 |
+| A7 | MVP의 Event는 단일 근무 시간대(Single Shift)를 전제한다 | 다일 전시·교대 행사는 날짜/교대별 Event 분리로 우회. 업그레이드 경로: Event—EventShift—EventRole 계층 삽입. ERD 착수 전 재확인 대상. 재확인 시 참고: 워커 페이 기대는 교대 수(2교/3교) 단위로 형성되는 관행(worker_interview) — 교대 수는 Event 구조가 아니라 근무 형태 프리미엄 조건으로 흡수(기획서 §9.3) |
 
 ---
 
